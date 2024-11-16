@@ -4,7 +4,7 @@ datetime
 appdirs
 yfinance
 plotly
-pandas
+pandas 
 scipy
-riskfolio
+riskfolio-lib
 numpy
