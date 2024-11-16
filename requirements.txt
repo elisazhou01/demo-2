@@ -7,3 +7,4 @@ plotly
 pandas 
 scipy
 riskfolio-lib
+plotly.graph_objs
