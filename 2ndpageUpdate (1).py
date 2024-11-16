@@ -251,8 +251,7 @@ if st.session_state.page == "quiz":
         # Store risk tolerance in session state
         st.session_state.risk_tolerance_level = risk_tolerance  # Save the result in session state
 
-        # Display the risk tolerance
-        st.markdown(f"Your risk tolerance level: **{risk_tolerance}**")
+
 
         # Add a button to go to the next page
         if st.button("Next", on_click=go_to_page_2, key="page_2"):
@@ -340,8 +339,8 @@ if st.session_state.page == "page_2":
                 debt_to_equity_rating = "N/A"
 
             # Evaluate Revenue Growth
-            if revenue_growth is not None: 
-              try: 
+            if revenue_growth is not None:
+              try:
                 revenue_growth = float(revenue_growth)
                 if revenue_growth >= 5:
                     revenue_growth_rating = "Consistent Growth"
@@ -352,7 +351,7 @@ if st.session_state.page == "page_2":
               except (TypeError, ValueError):
                 revenue_growth_rating = "N/A"
             else:
-                revenue_growth_rating = "N/A"      
+                revenue_growth_rating = "N/A"
 
             # Evaluate ROE
             if roe is not None:
@@ -441,7 +440,7 @@ if st.session_state.page == "page_2":
         with col1:
             st.subheader(f"Metrics for {company1}")
             for metric, value in metrics1.items():
-                if value is not None: 
+                if value is not None:
                   st.write(f"**{metric}:** {value}")
                 else:
                   st.write(f"**{metric}:** N/A")
@@ -449,7 +448,7 @@ if st.session_state.page == "page_2":
         with col1:
             st.subheader(f"Rating for {company1}")
             for metric, value in metrics12.items():
-                if value is not None: 
+                if value is not None:
                   st.write(f"**{metric}:** {value}")
                 else:
                   st.write(f"**{metric}:** N/A")
@@ -457,7 +456,7 @@ if st.session_state.page == "page_2":
         with col2:
             st.subheader(f"Metrics for {company2}")
             for metric, value in metrics2.items():
-                if value is not None: 
+                if value is not None:
                   st.write(f"**{metric}:** {value}")
                 else:
                   st.write(f"**{metric}:** N/A")
@@ -466,30 +465,12 @@ if st.session_state.page == "page_2":
         with col2:
             st.subheader(f"Rating for {company2}")
             for metric, value in metrics22.items():
-                if value is not None: 
+                if value is not None:
                   st.write(f"**{metric}:** {value}")
                 else:
                   st.write(f"**{metric}:** N/A")
 
-        # Plot Golden/Death Cross
-        def plot_golden_death_cross(symbol):
-            data = yf.download(symbol, start="2022-01-01")['Adj Close']
-            short_ma = data.rolling(window=50).mean()
-            long_ma = data.rolling(window=200).mean()
-
-            plt.figure(figsize=(12, 6))
-            plt.plot(data, label="Price")
-            plt.plot(short_ma, label="50-day MA", linestyle="--")
-            plt.plot(long_ma, label="200-day MA", linestyle="--")
-            plt.legend()
-            plt.title(f"Golden/Death Cross for {symbol}")
-            st.pyplot(plt)
-
-        st.subheader("**Golden/Death Cross for Selected Stocks**")
-        st.write("The golden cross & death cross are two technical indicators that help signal potential trends on stock prices, based on the movement of two moving averages. Golden Cross: This occurs when a short-term moving average (50-day moving average) crosses above a long-term moving average (200-day) moving average). The golden cross generally is viewed as a bullish signal, suggesting that the stocks momentum is shifting upward and that a potential uptrend may be beginning. Time to buy! Death Cross: This is the opposite scenario, where the short-term moving average crosses below the long-term moving average. The death cross is considered a bearish signal, indicating that downward momentum may continue & that the stock could be entering a downtrend. Sell before it is too late!")
-        plot_golden_death_cross(company1)
-        plot_golden_death_cross(company2)
-
+        st.subheader("**Stock Price Comparison**")
         try:
             # Compare stock price movements
             data1 = yf.download(company1, start="2023-01-01")['Adj Close']
@@ -505,6 +486,40 @@ if st.session_state.page == "page_2":
             st.pyplot(plt)
         except Exception as e:
             st.error(f"Error fetching data: {e}")
+
+        # Plot Golden/Death Cross
+        def plot_golden_death_cross(symbol):
+            data = yf.download(symbol, start="2022-01-01")['Adj Close']
+            short_ma = data.rolling(window=50).mean()
+            long_ma = data.rolling(window=200).mean()
+
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(data, label="Price")
+            plt.plot(short_ma, label="50-day MA", linestyle="--")
+            plt.plot(long_ma, label="200-day MA", linestyle="--")
+
+            # Identify Golden and Death Cross points
+            golden_cross = (short_ma.shift(1) < long_ma.shift(1)) & (short_ma > long_ma)
+            death_cross = (short_ma.shift(1) > long_ma.shift(1)) & (short_ma < long_ma)
+
+            # Use the points from the moving averages for the scatter plot
+            plt.scatter(short_ma[golden_cross].index, short_ma[golden_cross], marker="s", color="green", s=100, label="Golden Cross", zorder=5)
+            plt.scatter(short_ma[death_cross].index, short_ma[death_cross], marker="s", color="red", s=100, label="Death Cross", zorder=5)
+
+            plt.legend()
+            plt.title(f"Golden/Death Cross for {symbol}")
+            st.pyplot(plt)
+
+        st.subheader("**Golden/Death Cross for Selected Stocks**")
+        st.write('''
+        The golden cross & death cross are two technical indicators that help signal potential trends on stock prices, based on the movement of two moving averages. 
+        - **Golden Cross**: This occurs when a short-term moving average (50-day moving average) crosses above a long-term moving average (200-day) moving average). The golden cross generally is viewed as a bullish signal, suggesting that the stocks momentum is shifting upward and that a potential uptrend may be beginning. **Time to buy!**
+        - **Death Cross**: This is the opposite scenario, where the short-term moving average crosses below the long-term moving average. The death cross is considered a bearish signal, indicating that downward momentum may continue & that the stock could be entering a downtrend. **Sell before it is too late!**''')
+        plot_golden_death_cross(company1)
+        plot_golden_death_cross(company2)
+
+
     else:
         st.error("Please enter both company symbols for comparison.")
 
@@ -553,11 +568,11 @@ if st.session_state.page == "final_page":
             try:
                 stock_data = yf.download(selected_stocks, start="2023-01-01")['Adj Close']
                 rets = stock_data.pct_change().dropna()  # Calculate daily returns
-                
+
                 # Calculate optimal portfolio using riskfolio
                 port = rp.Portfolio(returns=rets)
                 port.assets_stats(method_mu='hist', method_cov='hist')  # Historical mean and covariance
-             
+
                 # Weights in case of minimizing risk
                 min_risk_weights = port.optimization(model='Classic', rm='MV', obj='MinRisk', rf=0, hist=True)
                 st.write("**Optimal Portfolio Weights (Minimizing Risk)**")
@@ -582,5 +597,3 @@ if st.session_state.page == "final_page":
                 st.error(f"Error building portfolio: {e}")
     #else:
         #st.warning("Please complete the Risk Tolerance Quiz first to get stock suggestions.")
-
-
