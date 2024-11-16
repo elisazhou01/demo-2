@@ -4,8 +4,7 @@ datetime
 appdirs
 yfinance
 plotly
-pandas 
+pandas
 scipy
 riskfolio-lib
-plotly.graph_objs
 numpy
